@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RE/MAX Estero — Control de Preventas</title>
+<style>
+:root{
+  --bg:#f5f4ee; --card:#ffffff; --text:#0a1440; --muted:#6b7280; --border:#e2e0d5;
+  --accent:#0a1440; --accent-d:#050a24; --brand-red:#ff2b00; --green:#16a34a; --red:#dc2626; --amber:#d97706;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#0a1440; --card:#111b4d; --text:#f2f2ee; --muted:#a9b0c9; --border:#22305f; }
+}
+:root[data-theme="dark"]{ --bg:#0a1440; --card:#111b4d; --text:#f2f2ee; --muted:#a9b0c9; --border:#22305f; }
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:14px;}
+header{position:sticky;top:0;padding:10px 14px calc(10px + env(safe-area-inset-top,0px));background:var(--card);border-bottom:1px solid var(--border);z-index:5;}
+header h1{margin:0;font-size:17px;}
+nav{display:flex;gap:6px;overflow-x:auto;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:50px;z-index:4;}
+nav button{white-space:nowrap;border:1px solid var(--border);background:var(--bg);color:var(--text);padding:7px 12px;border-radius:8px;font-size:13px;cursor:pointer;}
+nav button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+main{padding:12px;max-width:900px;margin:0 auto;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;}
+.btn:hover{background:var(--accent-d);}
+.btn.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn.danger{background:transparent;color:var(--red);border:1px solid var(--red);}
+.btn.sm{padding:4px 8px;font-size:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--border);}
+th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;}
+.scroll-x{overflow-x:auto;}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.tag.green{background:#dcfce7;color:#166534;}
+.tag.red{background:#fee2e2;color:#991b1b;}
+.tag.amber{background:#fef3c7;color:#92400e;}
+.tag.gray{background:var(--border);color:var(--muted);}
+input,select{width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;margin-top:2px;}
+label{display:block;font-size:12px;color:var(--muted);margin-top:8px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20;}
+.modal{background:var(--card);width:100%;max-width:600px;max-height:90vh;overflow-y:auto;border-radius:14px 14px 0 0;padding:16px;}
+@media(min-width:640px){.modal-bg{align-items:center;}.modal{border-radius:14px;}}
+.muted{color:var(--muted);font-size:12px;}
+.big{font-size:20px;font-weight:700;}
+.close{float:right;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;}
+.click{cursor:pointer;}
+.stat{display:flex;gap:10px;flex-wrap:wrap;}
+.stat .b{flex:1;min-width:100px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.stat .b .n{font-size:18px;font-weight:700;}
+.stat .b .l{font-size:11px;color:var(--muted);}
+.brandbar{height:5px;background:var(--brand-red);}
+header{display:flex;align-items:center;gap:10px;}
+header img{height:26px;display:block;}
+header .sep{width:1px;height:20px;background:var(--border);}
+header h1{font-size:14px;color:var(--muted);font-weight:600;}
+footer{max-width:900px;margin:10px auto 24px;padding:0 14px;text-align:center;color:var(--muted);font-size:11px;line-height:1.5;}
+footer b{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="brandbar"></div>
+<header>
+  <img src="data:image/png;base64,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" alt="RE/MAX Estero">
+  <div class="sep"></div>
+  <h1>Control de Preventas</h1>
+</header>
+<nav id="nav"></nav>
+<div id="localnotice" style="display:none;max-width:900px;margin:10px auto 0;padding:8px 14px;background:#fff7e6;border:1px solid #f0d58c;border-radius:8px;color:#7a5b00;font-size:12px;">
+  ⚠️ Modo local: los datos se guardan solo en este navegador/dispositivo, no se sincronizan entre celu y compu. Para eso, usá la versión publicada en Claude.
+</div>
+<main id="main"></main>
+<footer>
+  <b>RE/MAX Estero</b> · Mitre 202, Santiago del Estero · www.remax.com.ar/estero<br>
+  Corredor Responsable Mariano Alfonso Acosta · Matrícula CCPISE 238 · Colegio de Corredores Inmobiliarios de Santiago del Estero
+</footer>
+
+<script>
+let db=null, assets=null, uid=null, canEdit=true;
+let state={ props:[], empresas:[], indices:[], docs:[] };
+let tab='props';
+
+async function init(){
+  const hasClaude = (typeof window.claude !== 'undefined' && window.claude && typeof window.claude.use === 'function');
+  if(hasClaude){
+    db = await window.claude.use("db").catch(()=>null);
+    assets = await window.claude.use("assets").catch(()=>null);
+    const user = await window.claude.use("user").catch(()=>null);
+    if(user){ canEdit = user.canEdit ? user.canEdit() : true; }
+  }
+  if(db){
+    subscribe();
+  } else {
+    // Modo standalone (ej: GitHub Pages): todo se guarda en este navegador
+    document.getElementById('localnotice').style.display='block';
+    try{ state = JSON.parse(localStorage.getItem('cp_state')||'') || state; }catch(e){}
+  }
+  renderNav(); render();
+}
+
+function subscribe(){
+  db.collection('propiedades').onSnapshot(docs=>{ state.props = docs.map(d=>({id:d.id,...d.data})); render(); });
+  db.collection('empresas').onSnapshot(docs=>{ state.empresas = docs.map(d=>({id:d.id,...d.data})); render(); });
+  db.collection('indices').onSnapshot(docs=>{ state.indices = docs.map(d=>({id:d.id,...d.data})).sort((a,b)=>a.mes.localeCompare(b.mes)); render(); });
+  db.collection('documentos').onSnapshot(docs=>{ state.docs = docs.map(d=>({id:d.id,...d.data})); render(); });
+}
+
+function persistLocal(){ try{ localStorage.setItem('cp_state', JSON.stringify(state)); }catch(e){} }
+
+function colArr(col){ return col==='propiedades'?state.props: col==='empresas'?state.empresas: col==='documentos'?state.docs:state.indices; }
+async function saveDoc(col, id, data){
+  if(db){
+    if(id) await db.collection(col).doc(id).set(data,{merge:true});
+    else await db.collection(col).add(data);
+  } else {
+    if(id){ const arr=colArr(col); const i=arr.findIndex(x=>x.id===id); if(i>-1) arr[i]={...arr[i],...data}; }
+    else { colArr(col).push({id:'l'+Date.now(),...data}); }
+    persistLocal(); render();
+  }
+}
+async function delDoc(col,id){
+  if(db){ await db.collection(col).doc(id).delete(); }
+  else{ const arr=colArr(col); const i=arr.findIndex(x=>x.id===id); if(i>-1) arr.splice(i,1); persistLocal(); render(); }
+}
+
+function ultimoIndice(){ return state.indices.length? state.indices[state.indices.length-1].valor : null; }
+function fmt(n){ if(n==null||isNaN(n)) return '-'; return Number(n).toLocaleString('es-AR',{maximumFractionDigits:0}); }
+
+function renderNav(){
+  const nav=document.getElementById('nav');
+  const tabs=[['props','Propiedades'],['buscar','Buscar'],['compradores','Compradores'],['contabilidad','Contabilidad'],['empresas','Empresas'],['indice','Índice CAC']];
+  nav.innerHTML = tabs.map(([k,l])=>`<button class="${tab===k?'active':''}" onclick="setTab('${k}')">${l}</button>`).join('');
+}
+function setTab(t){ tab=t; renderNav(); render(); }
+
+function render(){
+  const m=document.getElementById('main');
+  if(tab==='props') m.innerHTML = renderProps();
+  if(tab==='buscar') m.innerHTML = renderBuscar();
+  if(tab==='compradores') m.innerHTML = renderCompradores();
+  if(tab==='contabilidad') m.innerHTML = renderContabilidad();
+  if(tab==='empresas') m.innerHTML = renderEmpresas();
+  if(tab==='indice') m.innerHTML = renderIndice();
+  if(tab==='buscar') wireBuscar();
+}
+
+// ---------- PROPIEDADES ----------
+function renderProps(){
+  const vendidas = state.props.filter(p=>p.vendida).length;
+  const enCurso = state.props.filter(p=>p.enCurso).length;
+  let html = `<div class="card stat">
+    <div class="b"><div class="n">${state.props.length}</div><div class="l">Unidades cargadas</div></div>
+    <div class="b"><div class="n">${vendidas}</div><div class="l">Vendidas</div></div>
+    <div class="b"><div class="n">${enCurso}</div><div class="l">En curso</div></div>
+    <div class="b"><div class="n">${state.props.length-vendidas-enCurso}</div><div class="l">Disponibles</div></div>
+  </div>`;
+  html += `<div class="row"><h3 style="margin:6px 0;">Unidades</h3><button class="btn" onclick="openPropForm()">+ Nueva</button></div>`;
+  if(!state.props.length) html += `<div class="empty">Todavía no cargaste propiedades.</div>`;
+  state.props.forEach(p=>{
+    const cuotas = p.cuotas||[];
+    const pagadas = cuotas.filter(c=>c.pagada).length;
+    html += `<div class="card click" onclick="openPropDetail('${p.id}')">
+      <div class="row">
+        <div><b>${p.tipo||''} ${p.numero?('#'+p.numero):''}</b> — ${p.direccion||''} ${p.piso?('piso '+p.piso):''}
+        <div class="muted">${p.empresa||'sin empresa'} · ${p.tipologia||''} · ${p.m2?p.m2+' m²':''}</div></div>
+        <div>${p.vendida?'<span class="tag green">Vendida</span>':p.enCurso?'<span class="tag amber">En curso</span>':'<span class="tag gray">Disponible</span>'}</div>
+      </div>
+      ${(p.vendida||p.enCurso)?`<div class="muted" style="margin-top:6px;">Comprador: ${p.compradorNombre||'-'} · Cuotas ${pagadas}/${cuotas.length}</div>`:''}
+    </div>`;
+  });
+  return html;
+}
+
+function openPropForm(id){
+  const p = id? state.props.find(x=>x.id===id) : {};
+  const empresasOpts = state.empresas.map(e=>`<option value="${e.nombre}" ${p.empresa===e.nombre?'selected':''}>${e.nombre}</option>`).join('');
+  const body = `
+  <button class="close" onclick="closeModal()">&times;</button>
+  <h3>${id?'Editar':'Nueva'} propiedad</h3>
+  <label>Empresa desarrolladora</label><select id="f_empresa"><option value="">-</option>${empresasOpts}</select>
+  <label>Proyecto / edificio</label><input id="f_proyecto" placeholder="ej: Green Palace" value="${p.proyecto||''}">
+  <label>Descripción / detalles de la operación</label>
+  <textarea id="f_descripcion" rows="3" placeholder="Notas, condiciones particulares, acuerdos verbales, etc." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;margin-top:2px;font-family:inherit;">${p.descripcion||''}</textarea>
+  <div class="grid2">
+    <div><label>Tipo</label><select id="f_tipo">${['Departamento','Casa','Duplex','Cochera'].map(t=>`<option ${p.tipo===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div><label>Tipología</label><select id="f_tipologia">${['Monoambiente','1 dormitorio','2 dormitorios','3 dormitorios','-'].map(t=>`<option ${p.tipologia===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div><label>Dirección</label><input id="f_direccion" value="${p.direccion||''}"></div>
+    <div><label>Piso</label><input id="f_piso" value="${p.piso||''}"></div>
+    <div><label>N° depto/unidad</label><input id="f_numero" value="${p.numero||''}"></div>
+    <div><label>m²</label><input id="f_m2" type="number" value="${p.m2||''}"></div>
+    <div><label>Fecha entrega estimada</label><input id="f_entrega" type="date" value="${p.entrega||''}"></div>
+    <div><label>Monto total (USD)</label><input id="f_monto" type="number" value="${p.montoTotal||''}" oninput="recalcFinanciado()"></div>
+  </div>
+  <label>Forma de pago</label>
+  <select id="f_forma" onchange="toggleFinanciado()">
+    <option value="contado" ${p.formaPago==='contado'?'selected':''}>Contado</option>
+    <option value="financiado" ${p.formaPago==='financiado'?'selected':''}>Financiado</option>
+  </select>
+  <div id="f_fin_block" class="grid2" style="display:${p.formaPago==='financiado'?'grid':'none'};">
+    <div><label>% de entrega</label><input id="f_pctEntrega" type="number" value="${p.pctEntrega||''}" oninput="recalcFinanciado()"></div>
+    <div><label>Monto de entrega (automático)</label><input id="f_montoEntrega" type="number" value="${p.montoEntrega||''}" readonly style="background:var(--border);"></div>
+    <div><label>Cantidad de cuotas</label><input id="f_cantCuotas" type="number" value="${p.cantCuotas||''}" oninput="recalcFinanciado()"></div>
+    <div><label>Importe por cuota (automático)</label><input id="f_importeCuota" type="number" value="${p.importeCuota||''}" readonly style="background:var(--border);"></div>
+    <div><label>Adelanto de cuotas</label><input id="f_adelanto" type="number" value="${p.adelanto||0}"></div>
+    <div><label>¿Se ajusta por CAC?</label><select id="f_usaCAC"><option value="si" ${p.usaCAC?'selected':''}>Sí</option><option value="no" ${!p.usaCAC?'selected':''}>No</option></select></div>
+  </div>
+  <label>Estado de la unidad</label>
+  <select id="f_estado" onchange="onEstadoChange()">
+    <option value="disponible" ${(!p.vendida&&!p.enCurso)?'selected':''}>Disponible</option>
+    <option value="en_curso" ${p.enCurso?'selected':''}>En curso (negociando con un comprador)</option>
+    <option value="vendida" ${p.vendida?'selected':''}>Vendida</option>
+  </select>
+  <div id="f_comprador_block" style="display:${(p.vendida||p.enCurso)?'block':'none'};">
+    <p class="muted" style="margin-top:8px;">Mientras esté "en curso" la unidad no aparece como disponible para otros clientes.</p>
+    <div class="grid2">
+      <div><label>Fecha de venta</label><input id="f_fechaVenta" type="date" value="${p.fechaVenta||''}"></div>
+      <div><label>Nombre comprador</label><input id="f_compradorNombre" value="${p.compradorNombre||''}"></div>
+      <div><label>Teléfono comprador</label><input id="f_compradorTel" value="${p.compradorTel||''}"></div>
+      <div><label>Email comprador</label><input id="f_compradorEmail" value="${p.compradorEmail||''}"></div>
+    </div>
+    <button class="btn sec sm" style="margin-top:8px;" onclick="generarCuotas()">Generar plan de cuotas</button>
+    <label>Comisión de la inmobiliaria por esta venta</label>
+    <select id="f_comisionEstado">
+      <option value="pendiente" ${p.comisionEstado==='pendiente'||!p.comisionEstado?'selected':''}>Pendiente de pago</option>
+      <option value="total" ${p.comisionEstado==='total'?'selected':''}>Pagada en su totalidad</option>
+      <option value="cuotas" ${p.comisionEstado==='cuotas'?'selected':''}>Se está pagando en cuotas</option>
+    </select>
+    <div class="grid2">
+      <div><label>Monto de comisión ya cobrado</label><input id="f_comisionPagado" type="number" value="${p.comisionPagado||0}"></div>
+      <div><label>Fecha del último pago</label><input id="f_comisionFecha" type="date" value="${p.comisionFecha||''}"></div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:14px;">
+    ${id?`<button class="btn danger" onclick="if(confirm('¿Eliminar propiedad?')){delDoc('propiedades','${id}');closeModal();}">Eliminar</button>`:'<span></span>'}
+    <button class="btn" onclick="saveProp('${id||''}')">Guardar</button>
+  </div>`;
+  showModal(body);
+  window._editCuotas = p.cuotas||[];
+}
+function toggleFinanciado(){ document.getElementById('f_fin_block').style.display = document.getElementById('f_forma').value==='financiado'?'grid':'none'; recalcFinanciado(); }
+function recalcFinanciado(){
+  const monto = parseFloat(document.getElementById('f_monto').value)||0;
+  const pct = parseFloat(document.getElementById('f_pctEntrega').value)||0;
+  const n = parseInt(document.getElementById('f_cantCuotas').value)||0;
+  const entrega = monto*(pct/100);
+  const saldo = monto-entrega;
+  document.getElementById('f_montoEntrega').value = entrega? Math.round(entrega*100)/100 : '';
+  document.getElementById('f_importeCuota').value = (n>0)? Math.round((saldo/n)*100)/100 : '';
+}
+function onEstadoChange(){
+  const e = document.getElementById('f_estado').value;
+  document.getElementById('f_comprador_block').style.display = (e==='vendida'||e==='en_curso') ? 'block':'none';
+}
+
+function generarCuotas(){
+  const n = parseInt(document.getElementById('f_cantCuotas').value)||0;
+  const importe = parseFloat(document.getElementById('f_importeCuota').value)||0;
+  const usaCAC = document.getElementById('f_usaCAC').value==='si';
+  const indiceBase = ultimoIndice();
+  const cuotas=[];
+  const start = new Date();
+  for(let i=1;i<=n;i++){
+    const d = new Date(start.getFullYear(), start.getMonth()+i, start.getDate());
+    cuotas.push({numero:i, fechaVenc:d.toISOString().slice(0,10), importe, indiceBase: usaCAC?indiceBase:null, pagada:false, fechaPago:null, montoPagado:null});
+  }
+  window._editCuotas = cuotas;
+  alert('Plan de '+n+' cuotas generado. Se guarda al presionar Guardar.');
+}
+
+async function saveProp(id){
+  const data = {
+    empresa: val('f_empresa'), proyecto: val('f_proyecto'), descripcion: val('f_descripcion'), tipo: val('f_tipo'), tipologia: val('f_tipologia'),
+    direccion: val('f_direccion'), piso: val('f_piso'), numero: val('f_numero'),
+    m2: num('f_m2'), entrega: val('f_entrega'), montoTotal: num('f_monto'),
+    formaPago: val('f_forma'), pctEntrega: num('f_pctEntrega'), montoEntrega: num('f_montoEntrega'),
+    cantCuotas: num('f_cantCuotas'), importeCuota: num('f_importeCuota'), adelanto: num('f_adelanto'),
+    usaCAC: val('f_usaCAC')==='si',
+    vendida: val('f_estado')==='vendida',
+    enCurso: val('f_estado')==='en_curso',
+    fechaVenta: valOpt('f_fechaVenta'), compradorNombre: valOpt('f_compradorNombre'),
+    compradorTel: valOpt('f_compradorTel'), compradorEmail: valOpt('f_compradorEmail'),
+    comisionEstado: valOpt('f_comisionEstado'), comisionPagado: num('f_comisionPagado'), comisionFecha: valOpt('f_comisionFecha'),
+    cuotas: window._editCuotas||[]
+  };
+  await saveDoc('propiedades', id||null, data);
+  closeModal();
+}
+function val(id){ const e=document.getElementById(id); return e?e.value:''; }
+function valOpt(id){ const e=document.getElementById(id); return e?e.value:null; }
+function num(id){ const e=document.getElementById(id); return e&&e.value!==''?parseFloat(e.value):null; }
+
+function openPropDetail(id){
+  const p = state.props.find(x=>x.id===id);
+  const cuotas = p.cuotas||[];
+  const idxActual = ultimoIndice();
+  let rows = cuotas.map((c,i)=>{
+    const hoy = (c.indiceBase && idxActual) ? (c.importe*(idxActual/c.indiceBase)) : c.importe;
+    const vencida = !c.pagada && new Date(c.fechaVenc) < new Date();
+    return `<tr>
+      <td>${c.numero}</td><td>${c.fechaVenc}</td>
+      <td>${fmt(c.importe)}</td><td>${fmt(hoy)}</td>
+      <td>${c.pagada?'<span class="tag green">Pagada</span>':vencida?'<span class="tag red">Vencida</span>':'<span class="tag amber">Pendiente</span>'}</td>
+      <td><button class="btn sm ${c.pagada?'sec':''}" onclick="toggleCuota('${id}',${i})">${c.pagada?'Deshacer':'Marcar pagada'}</button></td>
+    </tr>`;
+  }).join('');
+  const pendientePesos = cuotas.filter(c=>!c.pagada).reduce((s,c)=>{ const hoy=(c.indiceBase&&idxActual)?(c.importe*(idxActual/c.indiceBase)):c.importe; return s+hoy; },0);
+  const body = `<button class="close" onclick="closeModal()">&times;</button>
+  <h3>${p.tipo} ${p.numero?'#'+p.numero:''} — ${p.direccion||''}</h3>
+  <p class="muted">${p.empresa||''} · ${p.tipologia||''} · ${p.m2||'-'} m² · Monto total U$D ${fmt(p.montoTotal)}</p>
+  ${p.descripcion?`<div class="card" style="margin:10px 0;"><b>Descripción</b><p style="white-space:pre-wrap;margin:4px 0 0;">${p.descripcion}</p></div>`:''}
+  ${(p.vendida||p.enCurso)?`<p><b>Comprador${p.enCurso?' (en negociación)':''}:</b> ${p.compradorNombre||'-'} (${p.compradorTel||'-'})</p>
+  <div class="scroll-x"><table><tr><th>N°</th><th>Vence</th><th>Importe</th><th>Hoy ($)</th><th>Estado</th><th></th></tr>${rows||'<tr><td colspan=6 class="muted">Sin plan de cuotas.</td></tr>'}</table></div>
+  <p style="margin-top:10px;"><b>Saldo pendiente (valor hoy):</b> ${fmt(pendientePesos)}</p>`
+  : `<p class="muted">Unidad todavía no vendida.</p>`}
+  <button class="btn sec" style="margin-top:10px;" onclick="closeModal();openPropForm('${id}')">Editar propiedad</button>`;
+  showModal(body);
+}
+function toggleCuota(propId,i){
+  const p = state.props.find(x=>x.id===propId);
+  const c = p.cuotas[i];
+  c.pagada = !c.pagada;
+  c.fechaPago = c.pagada? new Date().toISOString().slice(0,10) : null;
+  saveDoc('propiedades', propId, {cuotas:p.cuotas});
+  openPropDetail(propId);
+}
+
+// ---------- BUSCAR (disponibles para clientes) ----------
+let fTipologia='', fEmpresa='';
+function renderBuscar(){
+  const empresasOpts = state.empresas.map(e=>`<option value="${e.nombre}" ${fEmpresa===e.nombre?'selected':''}>${e.nombre}</option>`).join('');
+  const tipologias = ['Monoambiente','1 dormitorio','2 dormitorios','3 dormitorios'];
+  const disponibles = state.props.filter(p=>!p.vendida && !p.enCurso && (!fTipologia||p.tipologia===fTipologia) && (!fEmpresa||p.empresa===fEmpresa));
+  const conteo = tipologias.map(t=>({t, n: state.props.filter(p=>!p.vendida&&!p.enCurso&&p.tipologia===t).length}));
+  let html = `<div class="card">
+    <h3 style="margin-top:0;">Buscar unidades disponibles</h3>
+    <div class="grid2">
+      <div><label>Tipología</label><select id="b_tipologia">
+        <option value="">Todas</option>${tipologias.map(t=>`<option ${fTipologia===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div><label>Empresa</label><select id="b_empresa"><option value="">Todas</option>${empresasOpts}</select></div>
+    </div>
+  </div>
+  <div class="card stat">${conteo.map(c=>`<div class="b"><div class="n">${c.n}</div><div class="l">${c.t}</div></div>`).join('')}</div>
+  <h3 style="margin:6px 0;">${disponibles.length} unidad(es) disponible(s)</h3>`;
+  if(!disponibles.length) html += `<div class="empty">No hay unidades disponibles con ese filtro.</div>`;
+  disponibles.forEach(p=>{
+    html += `<div class="card click" onclick="openPropDetail('${p.id}')">
+      <div class="row"><b>${p.tipo||''} ${p.numero?('#'+p.numero):''}</b> <span class="tag gray">${p.tipologia||'-'}</span></div>
+      <div class="muted">${p.direccion||''} ${p.piso?('piso '+p.piso):''} · ${p.m2?p.m2+' m²':'-'} · ${p.empresa||''}</div>
+      <div class="muted">Monto total: U$D ${fmt(p.montoTotal)} ${p.entrega?('· Entrega estimada '+p.entrega):''}</div>
+    </div>`;
+  });
+  const enNegociacion = state.props.filter(p=>p.enCurso && (!fTipologia||p.tipologia===fTipologia) && (!fEmpresa||p.empresa===fEmpresa));
+  if(enNegociacion.length){
+    html += `<h3 style="margin:14px 0 6px;">🔒 En negociación — no ofrecer</h3>`;
+    enNegociacion.forEach(p=>{
+      html += `<div class="card click" onclick="openPropDetail('${p.id}')" style="opacity:.75;">
+        <div class="row"><b>${p.tipo||''} ${p.numero?('#'+p.numero):''}</b> <span class="tag amber">En curso</span></div>
+        <div class="muted">${p.direccion||''} · ${p.tipologia||''} · ${p.empresa||''} · con ${p.compradorNombre||'un comprador'}</div>
+      </div>`;
+    });
+  }
+  return html;
+}
+function wireBuscar(){
+  const t=document.getElementById('b_tipologia'), e=document.getElementById('b_empresa');
+  if(t) t.onchange=()=>{ fTipologia=t.value; render(); };
+  if(e) e.onchange=()=>{ fEmpresa=e.value; render(); };
+}
+
+// ---------- COMPRADORES ----------
+function renderCompradores(){
+  const compradores = state.props.filter(p=>(p.vendida||p.enCurso) && p.compradorNombre);
+  let html = `<div class="row"><h3 style="margin:6px 0;">Compradores</h3></div>`;
+  if(!compradores.length) html += `<div class="empty">Todavía no hay compradores cargados.</div>`;
+  const idxActual = ultimoIndice();
+  compradores.forEach(p=>{
+    const cuotas = p.cuotas||[];
+    const pagadas = cuotas.filter(c=>c.pagada).length;
+    const vencidas = cuotas.filter(c=>!c.pagada && new Date(c.fechaVenc)<new Date()).length;
+    const abonadoMonto = (p.montoEntrega||0) + cuotas.filter(c=>c.pagada).reduce((s,c)=>s+(c.importe||0),0);
+    const pct = p.montoTotal? Math.min(100, Math.round(abonadoMonto/p.montoTotal*100)) : 0;
+    const pendientes = cuotas.filter(c=>!c.pagada).sort((a,b)=>a.fechaVenc.localeCompare(b.fechaVenc));
+    const proximo = pendientes[0];
+    const proximoHoy = proximo ? ((proximo.indiceBase&&idxActual)?(proximo.importe*(idxActual/proximo.indiceBase)):proximo.importe) : null;
+    const estadoTag = p.enCurso ? '<span class="tag amber">En negociación</span>' : (vencidas?`<span class="tag red">${vencidas} vencida(s)</span>`:'<span class="tag green">Al día</span>');
+    html += `<div class="card click" onclick="openPropDetail('${p.id}')">
+      <div class="row"><b>${p.compradorNombre}</b> ${estadoTag}</div>
+      <div class="muted">${p.compradorTel||'-'}</div>
+      <div class="muted">Producto: ${p.tipo||''} ${p.numero?'#'+p.numero:''} — ${p.direccion||''} · ${p.empresa||''}</div>
+      <div class="muted">Fecha de compra: ${p.fechaVenta||'-'} · Valor de compra: U$D ${fmt(p.montoTotal)}</div>
+      <div class="muted">${p.formaPago==='contado'?'Pago de contado':(p.usaCAC?'Cuotas ajustadas por índice CAC':'Cuotas fijas mensuales')}</div>
+      ${p.formaPago==='financiado'?`
+      <div style="margin-top:6px;">
+        <div class="row"><span class="muted">Abonado U$D ${fmt(abonadoMonto)}</span><b>${pct}%</b></div>
+        <div style="background:var(--border);border-radius:10px;height:6px;margin-top:4px;overflow:hidden;"><div style="background:var(--accent);height:100%;width:${pct}%;"></div></div>
+      </div>
+      <div class="muted" style="margin-top:6px;">Cuotas abonadas ${pagadas}/${cuotas.length} · Importe por cuota: U$D ${fmt(cuotas[0]?cuotas[0].importe:null)}</div>
+      ${proximo?`<div class="muted">Próximo vencimiento: ${proximo.fechaVenc} (cuota ${proximo.numero}) — ${fmt(proximoHoy)}</div>`:'<div class="muted">Sin cuotas pendientes.</div>'}
+      `:''}
+    </div>`;
+  });
+  return html;
+}
+
+// ---------- CONTABILIDAD ----------
+function renderContabilidad(){
+  const ventas = state.props.filter(p=>p.vendida);
+  const pctDe = (nombreEmpresa)=>{ const e=state.empresas.find(x=>x.nombre===nombreEmpresa); return e?(e.comisionPct||0):0; };
+  let totalComision=0, totalCobrado=0;
+  let rows = ventas.map(p=>{
+    const pct = pctDe(p.empresa);
+    const valorComision = (p.montoTotal||0)*(pct/100);
+    const pagado = p.comisionPagado||0;
+    const saldo = Math.max(0, valorComision-pagado);
+    totalComision += valorComision; totalCobrado += pagado;
+    const estadoTag = p.comisionEstado==='total'?'<span class="tag green">Pagada total</span>'
+      : p.comisionEstado==='cuotas'?'<span class="tag amber">En cuotas</span>'
+      : '<span class="tag red">Pendiente</span>';
+    return {p, pct, valorComision, pagado, saldo, estadoTag};
+  }).sort((a,b)=>(a.p.fechaVenta||'').localeCompare(b.p.fechaVenta||''));
+  let html = `<div class="card stat">
+    <div class="b"><div class="n">U$D ${fmt(totalComision)}</div><div class="l">Comisión total generada</div></div>
+    <div class="b"><div class="n">U$D ${fmt(totalCobrado)}</div><div class="l">Cobrado</div></div>
+    <div class="b"><div class="n">U$D ${fmt(totalComision-totalCobrado)}</div><div class="l">Saldo pendiente</div></div>
+  </div>
+  <h3 style="margin:6px 0;">Comisiones por venta</h3>`;
+  if(!rows.length) html += `<div class="empty">Todavía no hay unidades vendidas.</div>`;
+  rows.forEach(({p,pct,valorComision,pagado,saldo,estadoTag})=>{
+    html += `<div class="card click" onclick="openComisionForm('${p.id}')">
+      <div class="row"><b>${p.tipo||''} ${p.numero?'#'+p.numero:''} — ${p.proyecto||p.direccion||''}</b> ${estadoTag}</div>
+      <div class="muted">${p.empresa||'-'} · Vendida el ${p.fechaVenta||'-'} · Precio de venta: U$D ${fmt(p.montoTotal)}</div>
+      <div class="muted">Comisión ${pct}%: U$D ${fmt(valorComision)} · Cobrado: U$D ${fmt(pagado)} · Saldo: U$D ${fmt(saldo)}</div>
+    </div>`;
+  });
+  return html;
+}
+function openComisionForm(id){
+  const p = state.props.find(x=>x.id===id);
+  const pct = (state.empresas.find(x=>x.nombre===p.empresa)||{}).comisionPct||0;
+  const valorComision = (p.montoTotal||0)*(pct/100);
+  const body = `<button class="close" onclick="closeModal()">&times;</button>
+  <h3>Comisión — ${p.tipo||''} ${p.numero?'#'+p.numero:''}</h3>
+  <p class="muted">${p.empresa||'-'} · ${pct}% sobre U$D ${fmt(p.montoTotal)} = <b>U$D ${fmt(valorComision)}</b></p>
+  <label>Estado de pago</label>
+  <select id="c_estado">
+    <option value="pendiente" ${p.comisionEstado==='pendiente'||!p.comisionEstado?'selected':''}>Pendiente de pago</option>
+    <option value="total" ${p.comisionEstado==='total'?'selected':''}>Pagada en su totalidad</option>
+    <option value="cuotas" ${p.comisionEstado==='cuotas'?'selected':''}>Se está pagando en cuotas</option>
+  </select>
+  <div class="grid2">
+    <div><label>Monto cobrado hasta ahora</label><input id="c_pagado" type="number" value="${p.comisionPagado||0}"></div>
+    <div><label>Fecha del último pago</label><input id="c_fecha" type="date" value="${p.comisionFecha||''}"></div>
+  </div>
+  <button class="btn" style="margin-top:14px;" onclick="saveComision('${id}')">Guardar</button>`;
+  showModal(body);
+}
+async function saveComision(id){
+  await saveDoc('propiedades', id, { comisionEstado: val('c_estado'), comisionPagado: num('c_pagado'), comisionFecha: valOpt('c_fecha') });
+  closeModal();
+}
+
+// ---------- DOCUMENTOS ----------
+const TIPOS_DOC = ['DNI','Contrato','Render','Brochure','Otro'];
+function openDocsModal(empresa, proyecto){
+  renderDocsModal(empresa, proyecto);
+}
+function renderDocsModal(empresa, proyecto){
+  const docs = state.docs.filter(d=>d.empresa===empresa && d.proyecto===proyecto);
+  const rows = docs.map(d=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--border);">
+    <div><a href="${d.url}" target="_blank">${d.nombre||'Documento'}</a><div class="muted">${d.tipo||''}</div></div>
+    <button class="btn sm danger" onclick='delDoc("documentos","${d.id}").then(()=>renderDocsModal(${JSON.stringify(empresa)},${JSON.stringify(proyecto)}))'>Borrar</button>
+  </div>`).join('') || '<p class="muted">Sin documentos cargados.</p>';
+  const body = `<button class="close" onclick="closeModal()">&times;</button>
+  <h3>Documentación — ${proyecto==='(general)'?'General de la empresa':proyecto}</h3>
+  <p class="muted">${empresa}</p>
+  <div style="margin:10px 0;">${rows}</div>
+  ${(assets||!db)?`
+  <label>Tipo de documento</label>
+  <select id="d_tipo">${TIPOS_DOC.map(t=>`<option>${t}</option>`).join('')}</select>
+  <label>Nombre / descripción</label><input id="d_nombre" placeholder="ej: DNI socio gerente">
+  <label>Archivo (PDF, imagen, etc.)</label><input id="d_file" type="file">
+  <button class="btn" style="margin-top:10px;" onclick='subirDoc(${JSON.stringify(empresa)},${JSON.stringify(proyecto)})'>Subir</button>
+  <p class="muted" id="d_status" style="margin-top:6px;"></p>
+  `:'<p class="muted">La carga de archivos no está disponible en esta vista.</p>'}`;
+  showModal(body);
+}
+async function subirDoc(empresa, proyecto){
+  const fileInput = document.getElementById('d_file');
+  const status = document.getElementById('d_status');
+  const file = fileInput.files[0];
+  if(!file){ status.textContent='Elegí un archivo primero.'; return; }
+  status.textContent='Subiendo...';
+  try{
+    let assetId=null, url, contentType=file.type;
+    if(assets){
+      const res = await assets.upload(file);
+      url = res.url; assetId = res.id; contentType = res.contentType;
+    } else {
+      url = await new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
+    }
+    await saveDoc('documentos', null, {
+      empresa, proyecto, tipo: val('d_tipo'), nombre: val('d_nombre')||file.name,
+      assetId, url, contentType, fecha: new Date().toISOString().slice(0,10)
+    });
+    renderDocsModal(empresa, proyecto);
+  }catch(e){ status.textContent='No se pudo subir el archivo.'; }
+}
+
+// ---------- EMPRESAS ----------
+function renderEmpresas(){
+  let html = `<div class="row"><h3 style="margin:6px 0;">Empresas</h3><button class="btn" onclick="openEmpresaForm()">+ Nueva</button></div>`;
+  if(!state.empresas.length) html += `<div class="empty">Todavía no cargaste empresas.</div>`;
+  state.empresas.forEach(e=>{
+    const unidades = state.props.filter(p=>p.empresa===e.nombre);
+    const vendidas = unidades.filter(p=>p.vendida);
+    const comisionEsperada = vendidas.reduce((s,p)=>s+((p.montoTotal||0)*((e.comisionPct||0)/100)),0);
+    // agrupar por proyecto/edificio
+    const grupos = {};
+    unidades.forEach(p=>{ const key = p.proyecto || 'Sin proyecto asignado'; (grupos[key]=grupos[key]||[]).push(p); });
+
+    const nDocsGen = state.docs.filter(d=>d.empresa===e.nombre && d.proyecto==='(general)').length;
+    html += `<div class="card">
+      <div class="row click" onclick="openEmpresaForm('${e.id}')">
+        <div><b style="font-size:15px;">${e.nombre}</b> <span class="muted">· ${e.comisionPct||0}% honorarios</span></div>
+        <div>${e.comisionPagada?'<span class="tag green">Comisión pagada</span>':'<span class="tag amber">Comisión pendiente</span>'}</div>
+      </div>
+      <div class="muted">${unidades.length} unidades totales · ${vendidas.length} vendidas · Comisión esperada sobre vendidas: U$D ${fmt(comisionEsperada)}</div>
+      <button class="btn sec sm" style="margin-top:8px;" onclick='openDocsModal(${JSON.stringify(e.nombre)},"(general)")'>📎 Documentos de la empresa (${nDocsGen})</button>
+    </div>`;
+
+    if(Object.keys(grupos).length){
+      html += `<div class="grid2" style="gap:10px;margin-bottom:10px;">`;
+      Object.entries(grupos).forEach(([proyecto,props])=>{
+        const disp = props.filter(p=>!p.vendida&&!p.enCurso).length;
+        const enc = props.filter(p=>p.enCurso).length;
+        const vend = props.filter(p=>p.vendida).length;
+        const direcciones = [...new Set(props.map(p=>p.direccion).filter(Boolean))].join(' · ') || '-';
+        const entregas = [...new Set(props.map(p=>p.entrega).filter(Boolean))].sort();
+        const nDocs = state.docs.filter(d=>d.empresa===e.nombre && d.proyecto===proyecto).length;
+        html += `<div class="card" style="margin-bottom:0;">
+          <b>${proyecto}</b>
+          <div class="muted" style="margin-top:2px;">📍 ${direcciones}</div>
+          <div class="muted">📅 Entrega estimada: ${entregas[0]||'-'}</div>
+          <div class="row" style="margin-top:8px;">
+            <div class="muted">Disponibles: <b style="color:var(--text);">${disp}</b></div>
+            <div class="muted">En curso: <b style="color:var(--text);">${enc}</b></div>
+            <div class="muted">Vendidas: <b style="color:var(--text);">${vend}</b></div>
+          </div>
+          <button class="btn sec sm" style="margin-top:8px;" onclick='openDocsModal(${JSON.stringify(e.nombre)},${JSON.stringify(proyecto)})'>📎 Documentos (${nDocs})</button>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  });
+  return html;
+}
+function openEmpresaForm(id){
+  const e = id? state.empresas.find(x=>x.id===id) : {};
+  const body = `<button class="close" onclick="closeModal()">&times;</button>
+  <h3>${id?'Editar':'Nueva'} empresa</h3>
+  <label>Nombre</label><input id="e_nombre" value="${e.nombre||''}">
+  <label>% de honorarios que cobra la inmobiliaria</label><input id="e_pct" type="number" value="${e.comisionPct||''}">
+  <label><input type="checkbox" id="e_pagada" style="width:auto;display:inline;margin-right:6px;" ${e.comisionPagada?'checked':''}> Comisión pagada en su totalidad</label>
+  <label>Fecha de pago (o de inicio si es en cuotas)</label><input id="e_fechaPago" type="date" value="${e.fechaPago||''}">
+  <label>¿Pagó en cuotas? Detalle</label><input id="e_cuotasDetalle" placeholder="ej: 3 cuotas de U$D 500" value="${e.cuotasDetalle||''}">
+  <div class="row" style="margin-top:14px;">
+    ${id?`<button class="btn danger" onclick="if(confirm('¿Eliminar empresa?')){delDoc('empresas','${id}');closeModal();}">Eliminar</button>`:'<span></span>'}
+    <button class="btn" onclick="saveEmpresa('${id||''}')">Guardar</button>
+  </div>`;
+  showModal(body);
+}
+async function saveEmpresa(id){
+  const data = { nombre: val('e_nombre'), comisionPct: num('e_pct'),
+    comisionPagada: document.getElementById('e_pagada').checked,
+    fechaPago: valOpt('e_fechaPago'), cuotasDetalle: valOpt('e_cuotasDetalle') };
+  await saveDoc('empresas', id||null, data);
+  closeModal();
+}
+
+// ---------- INDICE CAC ----------
+function renderIndice(){
+  let rows = [...state.indices].reverse().map(i=>`<tr><td>${i.mes}</td><td>${fmt(i.valor)}</td>
+    <td><button class="btn sm danger" onclick="delDoc('indices','${i.id}')">Borrar</button></td></tr>`).join('');
+  return `<div class="card">
+    <h3 style="margin-top:0;">Cargar valor de índice CAC</h3>
+    <div class="grid2">
+      <div><label>Mes</label><input id="i_mes" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
+      <div><label>Valor del índice</label><input id="i_valor" type="number" step="0.01"></div>
+    </div>
+    <button class="btn" style="margin-top:10px;" onclick="addIndice()">Guardar</button>
+  </div>
+  <div class="card">
+    <p class="muted">Último valor cargado: <b>${ultimoIndice()!=null?fmt(ultimoIndice()):'sin datos'}</b> — se usa para actualizar el saldo de las cuotas indexadas.</p>
+    <div class="scroll-x"><table><tr><th>Mes</th><th>Valor</th><th></th></tr>${rows||'<tr><td colspan=3 class="muted">Sin registros.</td></tr>'}</table></div>
+  </div>`;
+}
+async function addIndice(){
+  const mes = val('i_mes'); const valor = num('i_valor');
+  if(!mes||valor==null) return alert('Completá mes y valor.');
+  const existing = state.indices.find(x=>x.mes===mes);
+  await saveDoc('indices', existing?existing.id:null, {mes,valor});
+}
+
+// ---------- MODAL ----------
+function showModal(html){
+  const bg=document.createElement('div'); bg.className='modal-bg'; bg.id='modalbg';
+  bg.onclick=(e)=>{ if(e.target===bg) closeModal(); };
+  bg.innerHTML=`<div class="modal">${html}</div>`;
+  document.body.appendChild(bg);
+}
+function closeModal(){ const m=document.getElementById('modalbg'); if(m) m.remove(); }
+
+init();
+</script>
+</body>
+</html>
